@@ -24,7 +24,38 @@
 
 <p>An alternative library of the Gmail API NuGet package.</p>
 
-<p><a href="http://kpstolk.github.io/Gmail-Api/">Read more</a> about Gmail API.</p>
+<p><a href="https://travis-ci.org/kpstolk/Gmail-Api"><img src="https://travis-ci.org/kpstolk/Gmail-Api.svg" alt="Build Status"></a>
+<a href="https://ci.appveyor.com/project/kpstolk/gmail-api"><img src="https://ci.appveyor.com/api/projects/status/tqv09fs3fo9a37t0?svg=true" alt="Build status"></a></p>
+
+<h2>
+<a id="setup" class="anchor" href="#setup" aria-hidden="true"><span class="octicon octicon-link"></span></a>Setup</h2>
+
+<div class="highlight highlight-csharp"><pre><span class="pl-c">// Client ID and secret of your project,</span>
+<span class="pl-c">// see the Dev Console (https://console.developers.google.com/project)</span>
+TokenManager tokenManager = <span class="pl-k">new</span> TokenManager(clientId, clientSecret);
+
+<span class="pl-c">// Get a refresh token, launches a browser for user interaction:</span>
+<span class="pl-k">string</span> authCode = tokenManager.GetAuthorizationCode();
+Oauth2Token oauth2Token = tokenManager.GetToken(authCode);
+
+<span class="pl-c">// First time required only</span>
+tokenManager.Setup(oauth2Token.RefreshToken, <span class="pl-c1">false</span>);
+
+<span class="pl-c">// Setup</span>
+GmailClient client = <span class="pl-k">new</span> GmailClient(emailAddress, tokenManager);
+GmailService service = <span class="pl-k">new</span> GmailService(client);</pre></div>
+
+<h2>
+<a id="usage-examples" class="anchor" href="#usage-examples" aria-hidden="true"><span class="octicon octicon-link"></span></a>Usage examples</h2>
+
+<div class="highlight highlight-csharp"><pre><span class="pl-c">// Get inbox messages</span>
+service.Messages.List();
+
+<span class="pl-c">// Get starred messages</span>
+service.Messages.ListByLabel(Label.Starred);
+
+<span class="pl-c">// List all labels</span>
+service.Labels.List();</pre></div>
 
       <footer class="site-footer">
         <span class="site-footer-owner"><a href="https://github.com/kpstolk/Gmail-Api">Gmail-api</a> is maintained by <a href="https://github.com/kpstolk">kpstolk</a>.</span>
