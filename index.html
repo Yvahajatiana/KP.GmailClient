@@ -30,26 +30,31 @@
 <h2>
 <a id="setup" class="anchor" href="#setup" aria-hidden="true"><span class="octicon octicon-link"></span></a>Setup</h2>
 
-<div class="highlight highlight-csharp"><pre><span class="pl-c">// Client ID and secret of your project,</span>
-<span class="pl-c">// see the Dev Console (https://console.developers.google.com/project)</span>
-<span class="pl-k">var</span> tokenHelper = <span class="pl-k">new</span> TokenAccessHelper(TokenManager.AuthorizationServerUrl, <span class="pl-s"><span class="pl-pds">"</span>clientId<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>clientSecret<span class="pl-pds">"</span></span>);
+<div class="highlight highlight-csharp"><pre>TokenManager tokenManager = <span class="pl-k">new</span> TokenManager(clientId, clientSecret);
+<span class="pl-c">// Provide a refresh token (required once)</span>
+<span class="pl-k">if</span> (!tokenManager.HasTokenSetup())
+{
+    <span class="pl-c">// Client ID and secret of your project,</span>
+    <span class="pl-c">// see the Dev Console (https://console.developers.google.com/project)</span>
+    <span class="pl-k">var</span> tokenHelper = <span class="pl-k">new</span> TokenAccessHelper(clientId, clientSecret);
 
-<span class="pl-c">// Get a refresh token, launches a browser for user interaction:</span>
-<span class="pl-k">string</span> authCode = tokenHelper.GetAuthorizationCode();
-Oauth2Token oauth2Token = tokenHelper.GetToken(authCode);
+    <span class="pl-c">// Get a refresh token, launches a browser for user interaction:</span>
+    <span class="pl-k">string</span> authCode = tokenHelper.GetAuthorizationCode();
+    <span class="pl-k">string</span> refreshToken = tokenHelper.GetRefreshToken(authCode);
 
-<span class="pl-c">// First time required only</span>
-TokenManager tokenManager = <span class="pl-k">new</span> TokenManager(<span class="pl-s"><span class="pl-pds">"</span>clientId<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>clientSecret<span class="pl-pds">"</span></span>);
-tokenManager.Setup(oauth2Token.RefreshToken, <span class="pl-c1">false</span>);
+    <span class="pl-c">// First time required only</span>
+    tokenManager.Setup(refreshToken, <span class="pl-c1">false</span>);
+}
 
-<span class="pl-c">// Setup</span>
-GmailClient client = <span class="pl-k">new</span> GmailClient(<span class="pl-s"><span class="pl-pds">"</span>me<span class="pl-pds">"</span></span>, tokenManager);
-GmailService service = <span class="pl-k">new</span> GmailService(client);</pre></div>
+<span class="pl-k">var</span> service = <span class="pl-k">new</span> GmailService(tokenManager);</pre></div>
 
 <h2>
 <a id="usage-examples" class="anchor" href="#usage-examples" aria-hidden="true"><span class="octicon octicon-link"></span></a>Usage examples</h2>
 
-<div class="highlight highlight-csharp"><pre><span class="pl-c">// Get inbox messages</span>
+<div class="highlight highlight-csharp"><pre><span class="pl-c">// Get the users profile</span>
+service.GetProfile();
+
+<span class="pl-c">// Get inbox messages</span>
 service.Messages.List();
 
 <span class="pl-c">// Get starred messages</span>
