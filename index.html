@@ -2,7 +2,7 @@
 <html lang="en-us">
   <head>
     <meta charset="UTF-8">
-    <title>KP.GmailApi by kpstolk</title>
+    <title>KP.GmailClient by kpstolk</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
     <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
@@ -11,61 +11,87 @@
   </head>
   <body>
     <section class="page-header">
-      <h1 class="project-name">KP.GmailApi</h1>
-      <h2 class="project-tagline">An alternative library of the Gmail API NuGet package.</h2>
-      <a href="https://github.com/kpstolk/KP.GmailApi" class="btn">View on GitHub</a>
-      <a href="https://github.com/kpstolk/KP.GmailApi/zipball/master" class="btn">Download .zip</a>
-      <a href="https://github.com/kpstolk/KP.GmailApi/tarball/master" class="btn">Download .tar.gz</a>
+      <h1 class="project-name">KP.GmailClient</h1>
+      <h2 class="project-tagline">A Gmail client for C#</h2>
+      <a href="https://github.com/kpstolk/KP.GmailClient" class="btn">View on GitHub</a>
+      <a href="https://github.com/kpstolk/KP.GmailClient/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/kpstolk/KP.GmailClient/tarball/master" class="btn">Download .tar.gz</a>
     </section>
 
     <section class="main-content">
-      <h1>
-<a id="kpgmailapi" class="anchor" href="#kpgmailapi" aria-hidden="true"><span class="octicon octicon-link"></span></a>KP.GmailApi</h1>
-
-<p>An alternative library of the Gmail API NuGet package.</p>
-
-<p><a href="https://travis-ci.org/kpstolk/KP.GmailApi"><img src="https://travis-ci.org/kpstolk/KP.GmailApi.svg?branch=master" alt="Build Status"></a>
+      <p><a href="https://travis-ci.org/kpstolk/KP.GmailClient"><img src="https://travis-ci.org/kpstolk/KP.GmailClient.svg?branch=master" alt="Build Status"></a>
 <a href="https://ci.appveyor.com/project/kpstolk/gmail-api"><img src="https://ci.appveyor.com/api/projects/status/tqv09fs3fo9a37t0?svg=true" alt="Build status"></a>
-<a href="https://coveralls.io/r/kpstolk/KP.GmailApi"><img src="https://coveralls.io/repos/kpstolk/KP.GmailApi/badge.svg" alt="Coverage Status"></a></p>
+<a href="https://scan.coverity.com/projects/kpstolk-kp-gmailclient">
+  <img alt="Coverity Scan Build Status" src="https://scan.coverity.com/projects/5330/badge.svg">
+</a></p>
+
+<h1>
+<a id="kpgmailclient" class="anchor" href="#kpgmailclient" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>KP.GmailClient</h1>
+
+<p>This is an alternative client for the auto generated Google.Apis.Gmail.v1 Client Library.</p>
+
+<ul>
+<li>It's easy to use</li>
+<li>Has added extension methods to make common tasks even more easier</li>
+<li>Supports Async</li>
+<li>Did I mention easy?</li>
+</ul>
 
 <h2>
-<a id="setup" class="anchor" href="#setup" aria-hidden="true"><span class="octicon octicon-link"></span></a>Setup</h2>
+<a id="prerequisites" class="anchor" href="#prerequisites" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Prerequisites</h2>
 
-<div class="highlight highlight-source-cs"><pre><span class="pl-k">var</span> tokenManager = <span class="pl-k">new</span> OAuth2TokenManager(clientId, clientSecret);
-<span class="pl-c">// Provide a refresh token (required once)</span>
-<span class="pl-k">if</span> (!tokenManager.HasTokenSetup())
+<ol>
+<li>Create a new project in the Google Developer Console -&gt; <a href="https://console.developers.google.com/project">https://console.developers.google.com/project</a>
+</li>
+<li>Create a service account for the project -&gt; <a href="https://console.cloud.google.com/iam-admin/serviceaccounts/">https://console.cloud.google.com/iam-admin/serviceaccounts/</a>
+</li>
+<li>Create and download a new key as JSON file.</li>
+<li>(only for Google Apps users) Go to the Google Apps Admin console and select the scopes, more on that here <a href="https://developers.google.com/identity/protocols/OAuth2ServiceAccount#delegatingauthority">https://developers.google.com/identity/protocols/OAuth2ServiceAccount#delegatingauthority</a>
+</li>
+</ol>
+
+<h2>
+<a id="setup" class="anchor" href="#setup" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Setup</h2>
+
+<div class="highlight highlight-source-cs"><pre><span class="pl-k">string</span> privateKey = <span class="pl-s"><span class="pl-pds">"</span>&lt;PKCS#8 private key from downloaded JSON file&gt;<span class="pl-pds">"</span></span>;
+<span class="pl-k">string</span> tokenUri = <span class="pl-s"><span class="pl-pds">"</span>https://accounts.google.com/o/oauth2/token<span class="pl-pds">"</span></span>;
+<span class="pl-k">string</span> clientEmail = <span class="pl-s"><span class="pl-pds">"</span>&lt;Client email from downloaded JSON file&gt;<span class="pl-pds">"</span></span>;
+<span class="pl-k">string</span> emailAddress = <span class="pl-s"><span class="pl-pds">"</span>&lt;The associated Gmail address or domain email address&gt;<span class="pl-pds">"</span></span>;
+ServiceAccountCredential accountCredential = <span class="pl-k">new</span> ServiceAccountCredential
 {
-    <span class="pl-c">// Client ID and secret of your project,</span>
-    <span class="pl-c">// see the Dev Console (https://console.developers.google.com/project)</span>
-    <span class="pl-k">var</span> tokenHelper = <span class="pl-k">new</span> TokenAccessHelper(clientId, clientSecret);
-
-    <span class="pl-c">// Get a refresh token, launches a browser for user interaction:</span>
-    <span class="pl-k">string</span> authCode = tokenHelper.GetAuthorizationCode();
-    <span class="pl-k">string</span> refreshToken = tokenHelper.GetRefreshToken(authCode);
-
-    <span class="pl-c">// First time required only</span>
-    tokenManager.Setup(refreshToken, <span class="pl-c1">false</span>);
-}
-
-<span class="pl-k">var</span> service = <span class="pl-k">new</span> GmailService(tokenManager);</pre></div>
+    PrivateKey = privateKey,
+    TokenUri = tokenUri,
+    ClientEmail = clientEmail
+};
+<span class="pl-k">var</span> client = <span class="pl-k">new</span> GmailClient(accountCredential, emailAddress, GmailScopes.Readonly);</pre></div>
 
 <h2>
-<a id="usage-examples" class="anchor" href="#usage-examples" aria-hidden="true"><span class="octicon octicon-link"></span></a>Usage examples</h2>
+<a id="usage-examples" class="anchor" href="#usage-examples" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Usage examples</h2>
 
-<div class="highlight highlight-source-cs"><pre><span class="pl-c">// Get the users profile</span>
-service.GetProfile();
+<div class="highlight highlight-source-cs"><pre><span class="pl-c">// Send a plain text email</span>
+Message sentMessage = <span class="pl-k">await</span> client.Messages.SendAsync(<span class="pl-s"><span class="pl-pds">"</span>you@gmail.com<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>The subject<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>Plain text body<span class="pl-pds">"</span></span>);
+
+<span class="pl-c">// Send a HTML email</span>
+sentMessage = <span class="pl-k">await</span> client.Messages.SendAsync(<span class="pl-s"><span class="pl-pds">"</span>you@gmail.com<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>The subject<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>&lt;h1&gt;HTML body&lt;/h1&gt;<span class="pl-pds">"</span></span>,
+                                                isBodyHtml: <span class="pl-c1">true</span>);
+
+<span class="pl-c">// Get the users profile</span>
+Profile profile = <span class="pl-k">await</span> client.GetProfileAsync();
 
 <span class="pl-c">// Get inbox messages</span>
-service.Messages.List();
+IList&lt;Message&gt; messages = <span class="pl-k">await</span> client.Messages.ListAsync();
 
 <span class="pl-c">// Get starred messages</span>
-service.Messages.ListByLabel(Label.Starred);
+IList&lt;Message&gt; starredMessages = <span class="pl-k">await</span> client.Messages.ListByLabelAsync(Label.Starred);
 
 <span class="pl-c">// List all labels</span>
-service.Labels.List();</pre></div>
+IList&lt;Label&gt; labels = <span class="pl-k">await</span> client.Labels.ListAsync();
+
+<span class="pl-c">// List all drafts</span>
+IList&lt;Draft&gt; drafts = <span class="pl-k">await</span> client.Drafts.ListAsync();</pre></div>
 
       <footer class="site-footer">
-        <span class="site-footer-owner"><a href="https://github.com/kpstolk/KP.GmailApi">KP.GmailApi</a> is maintained by <a href="https://github.com/kpstolk">kpstolk</a>.</span>
+        <span class="site-footer-owner"><a href="https://github.com/kpstolk/KP.GmailClient">KP.GmailClient</a> is maintained by <a href="https://github.com/kpstolk">kpstolk</a>.</span>
 
         <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
       </footer>
