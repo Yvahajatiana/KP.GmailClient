@@ -20,7 +20,7 @@
 
     <section class="main-content">
       <p><a href="https://travis-ci.org/kpstolk/KP.GmailClient"><img src="https://travis-ci.org/kpstolk/KP.GmailClient.svg?branch=master" alt="Build Status"></a>
-<a href="https://ci.appveyor.com/project/kpstolk/gmail-api"><img src="https://ci.appveyor.com/api/projects/status/tqv09fs3fo9a37t0?svg=true" alt="Build status"></a>
+<a href="https://ci.appveyor.com/project/KP/gmail-api"><img src="https://ci.appveyor.com/api/projects/status/tqv09fs3fo9a37t0?svg=true" alt="Build status"></a>
 <a href="https://scan.coverity.com/projects/kpstolk-kp-gmailclient">
   <img alt="Coverity Scan Build Status" src="https://scan.coverity.com/projects/5330/badge.svg">
 </a></p>
@@ -41,39 +41,46 @@
 <a id="prerequisites" class="anchor" href="#prerequisites" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Prerequisites</h2>
 
 <ol>
-<li>Create a new project in the Google Developer Console -&gt; <a href="https://console.developers.google.com/project">https://console.developers.google.com/project</a>
+<li>Create a new project in the Google Cloud Platform -&gt; <a href="https://console.cloud.google.com/home/dashboard">https://console.cloud.google.com/home/dashboard</a>
 </li>
+<li>Enable the Gmail API.</li>
 <li>Create a service account for the project -&gt; <a href="https://console.cloud.google.com/iam-admin/serviceaccounts/">https://console.cloud.google.com/iam-admin/serviceaccounts/</a>
 </li>
 <li>Create and download a new key as JSON file.</li>
-<li>(only for Google Apps users) Go to the Google Apps Admin console and select the scopes, more on that here <a href="https://developers.google.com/identity/protocols/OAuth2ServiceAccount#delegatingauthority">https://developers.google.com/identity/protocols/OAuth2ServiceAccount#delegatingauthority</a>
+<li>(only for G Suite users) Go to the G Suite Admin console and select the scopes, more on that here <a href="https://developers.google.com/identity/protocols/OAuth2ServiceAccount#delegatingauthority">https://developers.google.com/identity/protocols/OAuth2ServiceAccount#delegatingauthority</a>
 </li>
 </ol>
 
 <h2>
 <a id="setup" class="anchor" href="#setup" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Setup</h2>
 
-<div class="highlight highlight-source-cs"><pre><span class="pl-k">string</span> privateKey = <span class="pl-s"><span class="pl-pds">"</span>&lt;PKCS#8 private key from downloaded JSON file&gt;<span class="pl-pds">"</span></span>;
-<span class="pl-k">string</span> tokenUri = <span class="pl-s"><span class="pl-pds">"</span>https://accounts.google.com/o/oauth2/token<span class="pl-pds">"</span></span>;
-<span class="pl-k">string</span> clientEmail = <span class="pl-s"><span class="pl-pds">"</span>&lt;Client email from downloaded JSON file&gt;<span class="pl-pds">"</span></span>;
-<span class="pl-k">string</span> emailAddress = <span class="pl-s"><span class="pl-pds">"</span>&lt;The associated Gmail address or domain email address&gt;<span class="pl-pds">"</span></span>;
+<div class="highlight highlight-source-cs"><pre><span class="pl-c">// Either use from config</span>
+<span class="pl-k">const</span> GmailScopes scopes = GmailScopes.Readonly | GmailScopes.Compose;
+<span class="pl-k">string</span> privateKey = SettingsManager.GetPrivateKey();
+<span class="pl-k">string</span> tokenUri = SettingsManager.GetTokenUri();
+<span class="pl-k">string</span> clientEmail = SettingsManager.GetClientEmail();
+<span class="pl-k">string</span> emailAddress = SettingsManager.GetEmailAddress();
 ServiceAccountCredential accountCredential = <span class="pl-k">new</span> ServiceAccountCredential
 {
     PrivateKey = privateKey,
     TokenUri = tokenUri,
     ClientEmail = clientEmail
 };
-<span class="pl-k">var</span> client = <span class="pl-k">new</span> GmailClient(accountCredential, emailAddress, GmailScopes.Readonly);</pre></div>
+<span class="pl-k">var</span> client = <span class="pl-k">new</span> GmailClient(accountCredential, emailAddress, scopes);
+
+<span class="pl-c">// Or use from downloaded JSON file directly</span>
+<span class="pl-k">const</span> <span class="pl-k">string</span> path = <span class="pl-s"><span class="pl-pds">"</span>C:<span class="pl-cce">\\</span>Users<span class="pl-cce">\\</span>Me<span class="pl-cce">\\</span>Documents<span class="pl-cce">\\</span>Gmail-Project.json<span class="pl-pds">"</span></span>;
+<span class="pl-k">var</span> initializer = GmailClientInitializer.Initialize(path, scopes);
+client = <span class="pl-k">new</span> GmailClient(initializer, emailAddress);</pre></div>
 
 <h2>
 <a id="usage-examples" class="anchor" href="#usage-examples" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Usage examples</h2>
 
 <div class="highlight highlight-source-cs"><pre><span class="pl-c">// Send a plain text email</span>
-Message sentMessage = <span class="pl-k">await</span> client.Messages.SendAsync(<span class="pl-s"><span class="pl-pds">"</span>you@gmail.com<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>The subject<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>Plain text body<span class="pl-pds">"</span></span>);
+Message sentMessage = <span class="pl-k">await</span> client.Messages.SendAsync(emailAddress, <span class="pl-s"><span class="pl-pds">"</span>The subject<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>Plain text body<span class="pl-pds">"</span></span>);
 
 <span class="pl-c">// Send a HTML email</span>
-sentMessage = <span class="pl-k">await</span> client.Messages.SendAsync(<span class="pl-s"><span class="pl-pds">"</span>you@gmail.com<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>The subject<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>&lt;h1&gt;HTML body&lt;/h1&gt;<span class="pl-pds">"</span></span>,
-                                                isBodyHtml: <span class="pl-c1">true</span>);
+sentMessage = <span class="pl-k">await</span> client.Messages.SendAsync(emailAddress, <span class="pl-s"><span class="pl-pds">"</span>The subject<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>&lt;h1&gt;HTML body&lt;/h1&gt;<span class="pl-pds">"</span></span>, isBodyHtml: <span class="pl-c1">true</span>);
 
 <span class="pl-c">// Get the users profile</span>
 Profile profile = <span class="pl-k">await</span> client.GetProfileAsync();
